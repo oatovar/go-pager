@@ -42,7 +42,7 @@ jobs:
           ./cc-test-reporter before-build
       - name: 🧪 Run tests
         run: go test -v -tags=unit -coverprofile=c.out ./...
-      - name: Upload code climate test coverage report
+      - name: 🆙 Upload code climate test coverage report
         run: ./cc-test-reporter after-build --prefix github.com/oatovar/go-pager
   golangci-lint:
     name: golangci-lint
