@@ -5,8 +5,9 @@ on:
       - main
   pull_request:
     types:
-      - edited
-      - ready_for_review
+      - opened
+      - synchronize
+      - reopened
 env:
   CC_TEST_REPORTER_ID: "${{ secrets.CC_TEST_REPORTER_ID }}"
 jobs:
@@ -42,7 +43,7 @@ jobs:
       - name: 🧪 Run tests
         run: go test -v -tags=unit -coverprofile=c.out ./...
       - name: Upload code climate test coverage report
-        run: ./cc-test-reporter after-build --prefix github.com/aiyaio/aiyaio/api
+        run: ./cc-test-reporter after-build --prefix github.com/oatovar/go-pager
   golangci-lint:
     name: golangci-lint
     runs-on: ubuntu-latest
