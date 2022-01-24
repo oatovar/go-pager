@@ -1,22 +1,23 @@
-name: Unit Test
+name: Unit Tests
 on:
   push:
     branches:
       - main
   pull_request:
     types:
-      - edited
-      - ready_for_review
+      - opened
+      - synchronize
+      - reopened
 env:
   CC_TEST_REPORTER_ID: "${{ secrets.CC_TEST_REPORTER_ID }}"
 jobs:
   run-tests:
-    name: Unit Test
+    name: go test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: 📚 Checkout Code
         uses: actions/checkout@v2
-      - name: Setup Go environment
+      - name: 🛠️ Setup Go environment
         uses: actions/setup-go@v2.1.3
         with:
           go-version: "1.17.6"
@@ -41,8 +42,8 @@ jobs:
           ./cc-test-reporter before-build
       - name: 🧪 Run tests
         run: go test -v -tags=unit -coverprofile=c.out ./...
-      - name: Upload code climate test coverage report
-        run: ./cc-test-reporter after-build --prefix github.com/aiyaio/aiyaio/api
+      - name: 🆙 Upload code climate test coverage report
+        run: ./cc-test-reporter after-build --prefix github.com/oatovar/go-pager
   golangci-lint:
     name: golangci-lint
     runs-on: ubuntu-latest
