@@ -14,8 +14,8 @@ func TestNew(t *testing.T) {
 		"default config": {
 			in: &DefaultConfig,
 			expect: &Pager{
-				defaultPageSize: 10,
-				maxPageSize:     100,
+				DefaultPageSize: 10,
+				MaxPageSize:     100,
 			},
 		},
 		"default page size > max page size": {
@@ -37,103 +37,144 @@ func TestNew(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 	tests := map[string]struct {
-		in                        *Pager
-		expectCursor              string
-		expectLimit               uint
-		expectIsForwardPagination bool
+		pager  *Pager
+		in     *QueryArgs
+		expect *Result
 	}{
-		"empty arguments": {
-			in: &Pager{
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+		"nil query args": {
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "",
-			expectLimit:               DefaultConfig.DefaultPageSize,
-			expectIsForwardPagination: true,
+			in: nil,
+			expect: &Result{
+				Cursor:              "",
+				Limit:               DefaultConfig.DefaultPageSize,
+				IsForwardPagination: true,
+			},
+		},
+		"empty args": {
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
+			},
+			in: &QueryArgs{},
+			expect: &Result{
+				Cursor:              "",
+				Limit:               DefaultConfig.DefaultPageSize,
+				IsForwardPagination: true,
+			},
 		},
 		"after and before are both defined": {
-			in: &Pager{
-				After:           ptrFromStr("testCursor"),
-				Before:          ptrFromStr("testCursor"),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "",
-			expectLimit:               DefaultConfig.DefaultPageSize,
-			expectIsForwardPagination: true,
+			in: &QueryArgs{
+				After:  ptrFromStr("testCursor"),
+				Before: ptrFromStr("testCursor"),
+			},
+			expect: &Result{
+				Cursor:              "",
+				Limit:               DefaultConfig.DefaultPageSize,
+				IsForwardPagination: true,
+			},
 		},
 		"after and first are both defined": {
-			in: &Pager{
-				After:           ptrFromStr("testCursor"),
-				First:           ptrFromUint(10),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               10,
-			expectIsForwardPagination: true,
+			in: &QueryArgs{
+				After: ptrFromStr("testCursor"),
+				First: ptrFromUint(10),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               10,
+				IsForwardPagination: true,
+			},
 		},
 		"after defined and first greater than max page size": {
-			in: &Pager{
-				After:           ptrFromStr("testCursor"),
-				First:           ptrFromUint(125),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               DefaultConfig.MaxPageSize,
-			expectIsForwardPagination: true,
+			in: &QueryArgs{
+				After: ptrFromStr("testCursor"),
+				First: ptrFromUint(125),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               DefaultConfig.MaxPageSize,
+				IsForwardPagination: true,
+			},
 		},
 		"after is defined without first": {
-			in: &Pager{
-				After:           ptrFromStr("testCursor"),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               DefaultConfig.DefaultPageSize,
-			expectIsForwardPagination: true,
+			in: &QueryArgs{
+				After: ptrFromStr("testCursor"),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               DefaultConfig.DefaultPageSize,
+				IsForwardPagination: true,
+			},
 		},
 		"before and last are both defined": {
-			in: &Pager{
-				Before:          ptrFromStr("testCursor"),
-				Last:            ptrFromUint(30),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               30,
-			expectIsForwardPagination: false,
+			in: &QueryArgs{
+				Before: ptrFromStr("testCursor"),
+				Last:   ptrFromUint(30),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               30,
+				IsForwardPagination: false,
+			},
 		},
 		"before defined and last greater than max page size": {
-			in: &Pager{
-				Before:          ptrFromStr("testCursor"),
-				Last:            ptrFromUint(125),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               DefaultConfig.MaxPageSize,
-			expectIsForwardPagination: false,
+			in: &QueryArgs{
+				Before: ptrFromStr("testCursor"),
+				Last:   ptrFromUint(125),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               DefaultConfig.MaxPageSize,
+				IsForwardPagination: false,
+			},
 		},
 		"both is defined without last": {
-			in: &Pager{
-				Before:          ptrFromStr("testCursor"),
-				defaultPageSize: DefaultConfig.DefaultPageSize,
-				maxPageSize:     DefaultConfig.MaxPageSize,
+			pager: &Pager{
+				DefaultPageSize: DefaultConfig.DefaultPageSize,
+				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
-			expectCursor:              "testCursor",
-			expectLimit:               DefaultConfig.DefaultPageSize,
-			expectIsForwardPagination: false,
+			in: &QueryArgs{
+				Before: ptrFromStr("testCursor"),
+			},
+			expect: &Result{
+				Cursor:              "testCursor",
+				Limit:               DefaultConfig.DefaultPageSize,
+				IsForwardPagination: false,
+			},
 		},
 	}
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotCursor, gotLimit, gotIsForwardPagination := tc.in.Process()
-			assert.Equal(t, gotCursor, tc.expectCursor, "cursors should be equal")
-			assert.Equal(t, gotLimit, tc.expectLimit, "limits should be equal")
-			assert.Equal(t, gotIsForwardPagination, tc.expectIsForwardPagination, "cursors should be equal")
+			got := tc.pager.Process(tc.in)
+			assert.Equal(t, got, tc.expect, "results should be equal")
 		})
 	}
 }
