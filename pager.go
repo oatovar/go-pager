@@ -5,16 +5,12 @@ package pager
 
 import "fmt"
 
-// Pager follows the GraphQL cursor connections specification.
-// It captures the first/after and last/before arguments and
-// determines if the service should paginate forwards or backwards.
+// Pager follows the GraphQL cursor based pagination specification.
+// It processes QueryArgs and outputs a Result that contains the cursor,
+// limit, and if the service should paginate forwards or backwards.
 type Pager struct {
-	First           *uint   `json:"first,omitempty"`
-	After           *string `json:"after,omitempty"`
-	Last            *uint   `json:"last,omitempty"`
-	Before          *string `json:"before,omitempty"`
-	defaultPageSize uint    `json:"-"`
-	maxPageSize     uint    `json:"-"`
+	DefaultPageSize uint `json:"-"`
+	MaxPageSize     uint `json:"-"`
 }
 
 var DefaultConfig = Config{
@@ -33,8 +29,8 @@ type Config struct {
 func New(configs ...Config) (*Pager, error) {
 	if len(configs) == 0 {
 		return &Pager{
-			defaultPageSize: DefaultConfig.DefaultPageSize,
-			maxPageSize:     DefaultConfig.MaxPageSize,
+			DefaultPageSize: DefaultConfig.DefaultPageSize,
+			MaxPageSize:     DefaultConfig.MaxPageSize,
 		}, nil
 	}
 
@@ -44,9 +40,29 @@ func New(configs ...Config) (*Pager, error) {
 		return nil, fmt.Errorf("default page size greater than max page size")
 	}
 	return &Pager{
-		defaultPageSize: config.DefaultPageSize,
-		maxPageSize:     config.MaxPageSize,
+		DefaultPageSize: config.DefaultPageSize,
+		MaxPageSize:     config.MaxPageSize,
 	}, nil
+}
+
+// QueryArgs captures all arguments required for GraphQL cursor based
+// pagination.
+type QueryArgs struct {
+	First  *uint   `json:"first,omitempty" schema:"first,omitempty"`
+	After  *string `json:"after,omitempty" schema:"after,omitempty"`
+	Last   *uint   `json:"last,omitempty" schema:"last,omitempty"`
+	Before *string `json:"before,omitempty" schema:"before,omitempty"`
+}
+
+// Result represents the outcome of processing the supplied QueryArgs.
+type Result struct {
+	// Cursor defines where to begin pagination.
+	Cursor string
+	// Limit defines how many records to return.
+	Limit uint
+	// IsForwardPagination defines if the query should look for records
+	// that are less than or greater than the comparable cursor.
+	IsForwardPagination bool
 }
 
 // Process evaluates the arguments passed in and produces a cursor, limit and
@@ -68,28 +84,60 @@ func New(configs ...Config) (*Pager, error) {
 //
 // If no arguments are provided an empty cursor will be returned with the default page size
 // and the caller should forward paginate.
-func (p Pager) Process() (cursor string, limit uint, isForwardPagination bool) {
-	if p.After != nil && p.Before != nil {
-		return "", p.defaultPageSize, true
+func (p Pager) Process(args *QueryArgs) *Result {
+	if args == nil {
+		return &Result{
+			Cursor:              "",
+			Limit:               p.DefaultPageSize,
+			IsForwardPagination: true,
+		}
 	}
 
-	if p.After != nil && p.First != nil {
-		return *p.After, min(p.maxPageSize, *p.First), true
+	if args.After != nil && args.Before != nil {
+		return &Result{
+			Cursor:              "",
+			Limit:               p.DefaultPageSize,
+			IsForwardPagination: true,
+		}
 	}
 
-	if p.After != nil {
-		return *p.After, p.defaultPageSize, true
+	if args.After != nil && args.First != nil {
+		return &Result{
+			Cursor:              *args.After,
+			Limit:               min(p.MaxPageSize, *args.First),
+			IsForwardPagination: true,
+		}
 	}
 
-	if p.Before != nil && p.Last != nil {
-		return *p.Before, min(p.maxPageSize, *p.Last), false
+	if args.After != nil {
+		return &Result{
+			Cursor:              *args.After,
+			Limit:               p.DefaultPageSize,
+			IsForwardPagination: true,
+		}
 	}
 
-	if p.Before != nil {
-		return *p.Before, p.defaultPageSize, false
+	if args.Before != nil && args.Last != nil {
+		return &Result{
+			Cursor:              *args.Before,
+			Limit:               min(p.MaxPageSize, *args.Last),
+			IsForwardPagination: false,
+		}
 	}
 
-	return "", p.defaultPageSize, true
+	if args.Before != nil {
+		return &Result{
+			Cursor:              *args.Before,
+			Limit:               p.DefaultPageSize,
+			IsForwardPagination: false,
+		}
+	}
+
+	return &Result{
+		Cursor:              "",
+		Limit:               p.DefaultPageSize,
+		IsForwardPagination: true,
+	}
 }
 
 func min(x, y uint) uint {
