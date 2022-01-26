@@ -48,10 +48,10 @@ func New(configs ...Config) (*Pager, error) {
 // QueryArgs captures all arguments required for GraphQL cursor based
 // pagination.
 type QueryArgs struct {
-	First  *uint   `json:"first,omitempty" schema:"first,omitempty"`
-	After  *string `json:"after,omitempty" schema:"after,omitempty"`
-	Last   *uint   `json:"last,omitempty" schema:"last,omitempty"`
-	Before *string `json:"before,omitempty" schema:"before,omitempty"`
+	First  *uint   `json:"first" schema:"first" query:"first"`
+	After  *string `json:"after" schema:"after" query:"after"`
+	Last   *uint   `json:"last" schema:"last" query:"last"`
+	Before *string `json:"before" schema:"before" query:"before"`
 }
 
 // Result represents the outcome of processing the supplied QueryArgs.
