@@ -70,7 +70,8 @@ func TestBindRequest(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			var got QueryArgs
-			BindRequest(tc.in, &got)
+			err := BindRequest(tc.in, &got)
+			assert.Nil(t, err, "no error should be returned")
 			assert.Equal(t, *tc.expect, got)
 		})
 	}
