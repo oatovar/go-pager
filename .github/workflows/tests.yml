@@ -1,6 +1,8 @@
 name: Unit Tests
 on:
   push:
+    tags:
+      - v*
     branches:
       - main
   pull_request:
@@ -45,11 +47,13 @@ jobs:
       - name: 🆙 Upload code climate test coverage report
         run: ./cc-test-reporter after-build --prefix github.com/oatovar/go-pager
   golangci-lint:
-    name: golangci-lint
+    permissions:
+      contents: read
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          args: --verbose
+          version: latest

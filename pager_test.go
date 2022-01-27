@@ -71,8 +71,8 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				After:  ptrFromStr("testCursor"),
-				Before: ptrFromStr("testCursor"),
+				After:  PtrFromStr("testCursor"),
+				Before: PtrFromStr("testCursor"),
 			},
 			expect: &Result{
 				Cursor:              "",
@@ -87,8 +87,8 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				After: ptrFromStr("testCursor"),
-				First: ptrFromUint(10),
+				After: PtrFromStr("testCursor"),
+				First: PtrFromUint(10),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -102,8 +102,8 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				After: ptrFromStr("testCursor"),
-				First: ptrFromUint(125),
+				After: PtrFromStr("testCursor"),
+				First: PtrFromUint(125),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -117,7 +117,7 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				After: ptrFromStr("testCursor"),
+				After: PtrFromStr("testCursor"),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -131,8 +131,8 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				Before: ptrFromStr("testCursor"),
-				Last:   ptrFromUint(30),
+				Before: PtrFromStr("testCursor"),
+				Last:   PtrFromUint(30),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -146,8 +146,8 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				Before: ptrFromStr("testCursor"),
-				Last:   ptrFromUint(125),
+				Before: PtrFromStr("testCursor"),
+				Last:   PtrFromUint(125),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -161,7 +161,7 @@ func TestProcess(t *testing.T) {
 				MaxPageSize:     DefaultConfig.MaxPageSize,
 			},
 			in: &QueryArgs{
-				Before: ptrFromStr("testCursor"),
+				Before: PtrFromStr("testCursor"),
 			},
 			expect: &Result{
 				Cursor:              "testCursor",
@@ -177,12 +177,4 @@ func TestProcess(t *testing.T) {
 			assert.Equal(t, got, tc.expect, "results should be equal")
 		})
 	}
-}
-
-func ptrFromStr(in string) *string {
-	return &in
-}
-
-func ptrFromUint(in uint) *uint {
-	return &in
 }
